@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "jsIb4G/3LPrdymV/nrVtaKvQUjBcI7EsJvmifzeepkKMbxmqniyuxkgawJd2n7/+SrAJsKeDtvFlcomjN8HQGA==",
+  "success": true,
+  "projectFilePath": "/Users/devops/Desktop/dotnet/market-rest/market-rest/market-rest.csproj",
+  "expectedPackageFiles": [
+    "/Users/devops/.nuget/packages/microsoft.extensions.logging.abstractions/6.0.0/microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "/Users/devops/.nuget/packages/npgsql/8.0.0-preview.4/npgsql.8.0.0-preview.4.nupkg.sha512"
+  ],
+  "logs": []
+}
