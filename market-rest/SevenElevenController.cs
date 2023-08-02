@@ -5,19 +5,19 @@ using System.Collections.Generic;
 
 namespace CRUDMarket.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
+    [ApiController] // получается будет обрабатывать rest запросы 
+    [Route("api/[controller]")] // содание route
     public class MarketController : ControllerBase
     {
-        private readonly string connString =
+        private readonly string connString = // подключение к базе
             "Host=localhost;Username=postgres;Port=5432;Password=postgres;Database=seveneleven";
 
-        [HttpPost]
+        [HttpPost] // post запрос 
         public IActionResult AddProduct(SevenEleven product)
         {
-            try
+            try // почему тут try? для того что бы ловить исключения с помощью catch 
             {
-                using var conn = new NpgsqlConnection(connString);
+                using var conn = new NpgsqlConnection(connString); 
                 conn.Open();
 
                 using (var cmd = new NpgsqlCommand(
@@ -49,9 +49,9 @@ namespace CRUDMarket.Controllers
                 {
                     cmd.Parameters.AddWithValue("name", name);
 
-                    using var reader = cmd.ExecuteReader();
+                    using var reader = cmd.ExecuteReader(); 
 
-                    if (reader.Read())
+                    if (reader.Read()) // метод Read() переходит к следующей строке результата и возвращает true, если такая строка существует, или false, если результаты запроса закончились.
                     {
                         int id = reader.GetInt32(0);
                         string productName = reader.GetString(1);

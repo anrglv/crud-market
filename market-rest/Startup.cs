@@ -8,30 +8,30 @@ namespace CRUDMarket
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; } 
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration) // парсит appsettings.json 
         {
             Configuration = configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services) // Добавление контроллеров для http запросов
         {
             services.AddControllers();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)  
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment()) 
             {
-                app.UseDeveloperExceptionPage();
+                app.UseDeveloperExceptionPage(); // выводит ошибки 
             }
 
-            app.UseRouting();
+            app.UseRouting(); // маршрутизатор 
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllers(); // определяет endpoint 
             });
         }
     }
