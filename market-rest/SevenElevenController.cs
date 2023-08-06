@@ -5,29 +5,23 @@ using System.Collections.Generic;
 
 namespace CRUDMarket.Controllers
 {
-    [ApiController] // получается будет обрабатывать rest запросы 
-    [Route("api/[controller]")] // содание route
+    [ApiController]
+    [Route("api/[controller]")]
     public class MarketController : ControllerBase
     {
-        private readonly string connString = // подключение к базе
-            "Host=localhost;Username=postgres;Port=5432;Password=postgres;Database=seveneleven";
+        private readonly MarketContext _context;
 
-        [HttpPost] // post запрос 
+        public MarketController(MarketContext context)
+        {
+            _context = context;
+        }
+        [HttpPost]
         public IActionResult AddProduct(SevenEleven product)
         {
-            try // почему тут try? для того что бы ловить исключения с помощью catch 
+            try
             {
-                using var conn = new NpgsqlConnection(connString); 
-                conn.Open();
-
-                using (var cmd = new NpgsqlCommand(
-                           "INSERT INTO market (name, amount, price) VALUES (@name, @amount, @price)", conn))
-                {
-                    cmd.Parameters.AddWithValue("name", product.Name);
-                    cmd.Parameters.AddWithValue("amount", product.Amount);
-                    cmd.Parameters.AddWithValue("price", product.Price);
-                    cmd.ExecuteNonQuery();
-                }
+                _context.Market.Add(product);
+                _context.SaveChanges();
 
                 return Ok("Товар успешно добавлен.");
             }
@@ -42,29 +36,15 @@ namespace CRUDMarket.Controllers
         {
             try
             {
-                using var conn = new NpgsqlConnection(connString);
-                conn.Open();
+                var product = _context.Market.FirstOrDefault(p => p.Name == name);
 
-                using (var cmd = new NpgsqlCommand("SELECT * FROM market WHERE name = @name", conn))
+                if (product != null)
                 {
-                    cmd.Parameters.AddWithValue("name", name);
-
-                    using var reader = cmd.ExecuteReader(); 
-
-                    if (reader.Read()) // метод Read() переходит к следующей строке результата и возвращает true, если такая строка существует, или false, если результаты запроса закончились.
-                    {
-                        int id = reader.GetInt32(0);
-                        string productName = reader.GetString(1);
-                        int amount = reader.GetInt32(2);
-                        double price = reader.GetDouble(3);
-
-                        var product = new SevenEleven(productName, amount, price);
-                        return Ok(product);
-                    }
-                    else
-                    {
-                        return NotFound("Товар не найден.");
-                    }
+                    return Ok(product);
+                }
+                else
+                {
+                    return NotFound("Товар не найден.");
                 }
             }
             catch (Exception ex)
@@ -72,45 +52,26 @@ namespace CRUDMarket.Controllers
                 return StatusCode(500, $"Произошла ошибка: {ex.Message}");
             }
         }
-
         [HttpPut("{name}")]
         public IActionResult UpdateProductInfo(string name, SevenEleven updatedProduct)
         {
             try
             {
-                using var conn = new NpgsqlConnection(connString);
-                conn.Open();
-                
-                using (var cmdCheck = new NpgsqlCommand("SELECT COUNT(*) FROM market WHERE name = @name", conn))
+                var product = _context.Market.FirstOrDefault(p => p.Name == name);
+                if (product != null)
                 {
-                    cmdCheck.Parameters.AddWithValue("name", name);
-                    int count = Convert.ToInt32(cmdCheck.ExecuteScalar());
+                    // Внесение изменений в объект сущности
+                    product.Name = updatedProduct.Name;
+                    product.Amount = updatedProduct.Amount;
+                    product.Price = updatedProduct.Price;
 
-                    if (count == 0)
-                    {
-                        return NotFound("Товар не найден.");
-                    }
+                    _context.SaveChanges(); // Сохранение изменений в базе данных
+
+                    return Ok("Товар успешно обновлен.");
                 }
-                
-                using (var cmdUpdate =
-                       new NpgsqlCommand(
-                           "UPDATE market SET name = @newName, amount = @amount, price = @price WHERE name = @oldName",
-                           conn))
+                else
                 {
-                    cmdUpdate.Parameters.AddWithValue("oldName", name);
-                    cmdUpdate.Parameters.AddWithValue("newName", updatedProduct.Name);
-                    cmdUpdate.Parameters.AddWithValue("amount", updatedProduct.Amount);
-                    cmdUpdate.Parameters.AddWithValue("price", updatedProduct.Price);
-
-                    int rowsAffected = cmdUpdate.ExecuteNonQuery();
-                    if (rowsAffected > 0)
-                    {
-                        return Ok("Информация о товаре успешно обновлена.");
-                    }
-                    else
-                    {
-                        return StatusCode(500, "Ошибка при обновлении информации о товаре.");
-                    }
+                    return NotFound("Товар не найден.");
                 }
             }
             catch (Exception ex)
@@ -121,43 +82,28 @@ namespace CRUDMarket.Controllers
         [HttpDelete("{name}")]
         public IActionResult DeleteProduct(string name)
         {
-            try
             {
-                using var conn = new NpgsqlConnection(connString);
-                conn.Open();
-                
-                using (var cmdCheck = new NpgsqlCommand("SELECT COUNT(*) FROM market WHERE name = @name", conn))
+                try
                 {
-                    cmdCheck.Parameters.AddWithValue("name", name);
-                    int count = Convert.ToInt32(cmdCheck.ExecuteScalar());
-
-                    if (count == 0)
+                    var product = _context.Market.FirstOrDefault(p => p.Name == name);
+                    if (product != null)
                     {
-                        return NotFound("Товар не найден.");
-                    }
-                }
-                
-                using (var cmdDelete =
-                       new NpgsqlCommand(
-                           "DELETE FROM market WHERE name = @name", conn ))
-                {
-                    cmdDelete.Parameters.AddWithValue("name", name);
-
-                    int rowsAffected = cmdDelete.ExecuteNonQuery();
-                    if (rowsAffected > 0)
-                    {
+                        _context.Market.Remove(product);
+                        _context.SaveChanges();
                         return Ok("Товар успешно удален.");
                     }
                     else
                     {
-                        return StatusCode(500, "Ошибка при удалении товара.");
+                        return NotFound("Товар не найден.");
                     }
+
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Произошла ошибка: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Произошла ошибка: {ex.Message}");
-            }
+
         }
     }
-}
+}    

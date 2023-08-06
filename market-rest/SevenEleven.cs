@@ -1,16 +1,19 @@
-using System;
-using System.Collections.Generic;
-
+using System.ComponentModel.DataAnnotations; // Добавим пространство имен для атрибута [Key]
 
 namespace CRUDMarket
 {
     public class SevenEleven
     {
-        public string Name { get; set; } // помогает для чтения и записи 
-        public int Amount { get; set; } // помогает для чтения и записи 
-        public double Price { get; set; } // помогает для чтения и записи 
+        [Key] // Укажем, что это свойство является первичным ключом
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Amount { get; set; }
+        public double Price { get; set; }
 
-        public SevenEleven(string name, int amount, double price) // создание объекта 
+        // Пустой конструктор для Entity Framework Core
+        public SevenEleven() { }
+
+        public SevenEleven(string name, int amount, double price)
         {
             Name = name;
             Amount = amount;
